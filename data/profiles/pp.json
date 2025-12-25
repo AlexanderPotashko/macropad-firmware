@@ -1,0 +1,42 @@
+{
+  "name": "PP",
+  "buttons": [
+    {
+      "_id": "m_pp_001",
+      "name": "Space Every 5s",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        { "type": "press", "keys": "8", "wait": 300 },
+        { "type": "press", "keys": "Shift+Space", "wait": 15000 }
+      ]
+    },
+    {
+      "_id": "m_pp_002",
+      "name": "8 Every 5s",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        { "type": "press", "keys": "8", "wait": 1000 }
+      ]
+    },
+    {
+      "_id": "m_pp_003",
+      "name": "F8 Every 240s",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        { "type": "press", "keys": "F8", "wait": 240000 }
+      ]
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}

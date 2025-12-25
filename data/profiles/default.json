@@ -1,0 +1,116 @@
+{
+  "name": "Sums",
+  "buttons": [
+    {
+      "_id": "m_1734350002",
+      "name": "Window 1 Farm",
+      "type": "toggle",
+      "actions": [
+        {
+          "type": "press",
+          "keys": "Win+1",
+          "wait": 3000
+        },
+        {
+          "type": "press",
+          "keys": "F1",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "F2",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "F3",
+          "wait": 1000
+        },
+        {
+          "type": "wait",
+          "ms": 10000
+        },
+        {
+          "type": "press",
+          "keys": "F4",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "Win+3",
+          "wait": 3000
+        },
+        {
+          "type": "wait",
+          "ms": 300000
+        }
+      ]
+    },
+    {
+      "_id": "m_1734350003",
+      "name": "Window 2 Farm",
+      "type": "toggle",
+      "actions": [
+        {
+          "type": "press",
+          "keys": "Win+2",
+          "wait": 3000
+        },
+        {
+          "type": "press",
+          "keys": "F1",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "F2",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "F3",
+          "wait": 1000
+        },
+        {
+          "type": "wait",
+          "ms": 15000
+        },
+        {
+          "type": "press",
+          "keys": "F4",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "Win+3",
+          "wait": 3000
+        },
+        {
+          "type": "wait",
+          "ms": 900000
+        }
+      ]
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "_id": "m_1734350001",
+      "name": "Ankou Attack",
+      "type": "toggle",
+      "actions": [
+        {
+          "type": "press",
+          "keys": "F5",
+          "wait": 240000
+        }
+      ]
+    }
+  ]
+}

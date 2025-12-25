@@ -1,0 +1,9 @@
+boot_out.txt
+.metadata_never_index
+.Trash-1000
+.Trashes
+settings.toml
+__pycache__/
+*.pyc
+lib/
+.DS_Store

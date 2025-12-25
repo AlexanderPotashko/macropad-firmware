@@ -1,0 +1,38 @@
+{
+  "name": "BP",
+  "buttons": [
+    {
+      "_id": "m_1735000001",
+      "name": "8 + Shift Space",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        { "type": "press", "keys": "8", "wait": 500 },
+        { "type": "press", "keys": "Shift+Space", "wait": 15000 }
+      ]
+    },
+    {
+      "_id": "m_1735000002",
+      "name": "F4 Every 30s",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        {
+          "type": "press",
+          "keys": "F4",
+          "wait": 30000
+        }
+      ]
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}

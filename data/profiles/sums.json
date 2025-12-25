@@ -1,0 +1,80 @@
+{
+  "name": "Sums",
+  "buttons": [
+    {
+      "_id": "m_1734350002",
+      "name": "Window 1 WARC",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        {
+          "type": "press",
+          "keys": "F1",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "Win+2",
+          "wait": 2000
+        },
+        {
+          "type": "press",
+          "keys": "F1",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "Win+1",
+          "wait": 2000
+        },
+        {
+          "type": "wait",
+          "ms": 600000
+        }
+      ]
+    },
+    {
+      "_id": "m_1734350003",
+      "name": "Window BD",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        {
+          "type": "press",
+          "keys": "F2",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "Win+3",
+          "wait": 2000
+        },
+        {
+          "type": "press",
+          "keys": "F1",
+          "wait": 1000
+        },
+        {
+          "type": "press",
+          "keys": "Win+1",
+          "wait": 2000
+        },
+        {
+          "type": "wait",
+          "ms": 308000
+        }
+      ]
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}

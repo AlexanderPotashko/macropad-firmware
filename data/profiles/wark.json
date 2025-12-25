@@ -1,0 +1,53 @@
+{
+  "name": "Wark",
+  "buttons": [
+    {
+      "_id": "m_1734350003",
+      "name": "Main Combo",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        { "type": "press", "keys": "F9", "wait": 300 },
+        { "type": "press", "keys": "F10", "wait": 300 },
+        { "type": "press", "keys": "F6", "wait": 300 },
+        { "type": "press", "keys": "Shift+E", "wait": 1000 },
+        { "type": "press", "keys": "Shift+R", "wait": 10000 }
+      ]
+    },
+    {
+      "_id": "m_1734350004",
+      "name": "F4 Every 15s",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        {
+          "type": "press",
+          "keys": "F4",
+          "wait": 15000
+        }
+      ]
+    },
+    {
+      "_id": "m_1734350005",
+      "name": "F8 Every 240s",
+      "type": "toggle",
+      "loop": true,
+      "actions": [
+        {
+          "type": "press",
+          "keys": "F8",
+          "wait": 240000
+        }
+      ]
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}
