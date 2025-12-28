@@ -1,72 +1,72 @@
 # MacroPad Firmware v2
 
-Прошивка для Adafruit MacroPad RP2040 с продвинутой системой управления макросами.
+Firmware for Adafruit MacroPad RP2040 with advanced macro management system.
 
-## Особенности
+## Features
 
-### Гибридная система приоритетов
-- **Press/Hold макросы**: Имеют высший приоритет, могут прерывать активные макросы
-- **Toggle макросы**: Выполняются через очередь, не прерывают друг друга
+### Hybrid Priority System
+- **Press/Hold macros**: Have highest priority, can interrupt active macros
+- **Toggle macros**: Execute through queue, don't interrupt each other
 
-### Система SLOT + QUEUE
-- **12 СЛОТОВ** (по одному на кнопку): Для мгновенного выполнения
-- **Очередь до 1000 макросов**: Для ожидающих Toggle-макросов
-- Защита от переполнения: Проверка ПЕРЕД добавлением
+### SLOT + QUEUE System
+- **12 SLOTS** (one per button): For instant execution
+- **Queue up to 1000 macros**: For waiting Toggle macros
+- Overflow protection: Check BEFORE adding
 
-### Двухуровневая система таймеров
-- `action_wait_until`: Ожидание между действиями внутри макроса
-- `cycle_wait_until`: Ожидание перед следующим циклом Toggle-макроса
+### Two-Level Timer System
+- `action_wait_until`: Waiting between actions within macro
+- `cycle_wait_until`: Waiting before next Toggle macro cycle
 
-### 5 состояний макросов
-1. **OFF** (по умолчанию)
-2. **ACTIVE** (выполняется действие)
-3. **WAIT** (ожидание между действиями)
-4. **SLEEPING** (ожидание перед следующим циклом)
-5. **IN_QUEUE** (ожидает в очереди)
+### 5 Macro States
+1. **OFF** (default)
+2. **ACTIVE** (executing action)
+3. **WAIT** (waiting between actions)
+4. **SLEEPING** (waiting before next cycle)
+5. **IN_QUEUE** (waiting in queue)
 
-### LED индикация
-- **READY** (тусклый зелёный): Макрос готов к запуску
-- **ACTIVE** (синий): Макрос выполняет действие
-- **WAIT** (жёлтый): Макрос ожидает между действиями
-- **SLEEPING** (зелёный): Toggle-макрос спит до следующего цикла
-- **IN_QUEUE** (фиолетовый): Toggle-макрос в очереди
+### LED Indication
+- **READY** (dim green): Macro ready to launch
+- **ACTIVE** (blue): Macro executing action
+- **WAIT** (yellow): Macro waiting between actions
+- **SLEEPING** (green): Toggle macro sleeping until next cycle
+- **IN_QUEUE** (purple): Toggle macro in queue
 
-### OLED дисплей
-Показывает состояние системы в реальном времени:
+### OLED Display
+Shows system state in real-time:
 ```
 Test EXEC
 / #3 [T>] Farm
 / QUEUE: 2 [5...]
 / SLEEP: 1
 ```
-- **EXEC**: Выполняемые макросы (SLOT)
-- **QUEUE**: Количество и имена ожидающих
-- **SLEEP**: Количество спящих макросов
+- **EXEC**: Executing macros (SLOT)
+- **QUEUE**: Count and names of waiting macros
+- **SLEEP**: Count of sleeping macros
 
-## Структура файлов
+## File Structure
 
-### Основные модули
-- `code.py` - Точка входа, главный цикл
-- `macro_engine.py` - Координация выполнения макросов
-- `macro_state.py` - Управление состоянием макросов
-- `queue_manager.py` - Управление SLOT + QUEUE
-- `action_executor.py` - Выполнение действий (клавиши, мышь)
-- `color_manager.py` - Управление LED индикацией
-- `display_manager.py` - Управление OLED дисплеем
+### Core Modules
+- `code.py` - Entry point, main loop
+- `macro_engine.py` - Macro execution coordination
+- `macro_state.py` - Macro state management
+- `queue_manager.py` - SLOT + QUEUE management
+- `action_executor.py` - Action execution (keys, mouse)
+- `color_manager.py` - LED indication management
+- `display_manager.py` - OLED display management
 
-### Вспомогательные модули
-- `key_mapping.py` - Маппинг кнопок на макросы
-- `profile_manager.py` - Управление профилями
-- `macro_parser.py` - Парсинг JSON конфигураций
+### Helper Modules
+- `key_mapping.py` - Button to macro mapping
+- `profile_manager.py` - Profile management
+- `macro_parser.py` - JSON configuration parsing
 
-### Данные
-- `data/profiles/*.json` - Профили с макросами
-- `data/current_profile.json` - Активный профиль
-- `data/button_colors.json` - Цвета кнопок
+### Data
+- `data/profiles/*.json` - Profiles with macros
+- `data/current_profile.json` - Active profile
+- `data/button_colors.json` - Button colors
 
-## Формат макросов
+## Macro Format
 
-### Press (одно нажатие)
+### Press (single press)
 ```json
 {
   "name": "Single Press",
@@ -77,7 +77,7 @@ Test EXEC
 }
 ```
 
-### Hold (удерживание)
+### Hold (holding)
 ```json
 {
   "name": "Hold Shift",
@@ -88,7 +88,7 @@ Test EXEC
 }
 ```
 
-### Toggle (циклическое выполнение)
+### Toggle (cyclic execution)
 ```json
 {
   "name": "Farm Loop",
@@ -101,49 +101,49 @@ Test EXEC
 }
 ```
 
-**Важно**: Параметр `wait` на уровне макроса задаёт паузу перед следующим циклом. Финальное `wait` из последнего действия удалено в v2.
+**Important**: The `wait` parameter at macro level sets the pause before the next cycle. Final `wait` from the last action was removed in v2.
 
 ## Deployment
 
-### Чистая установка
-1. Скопируйте все `.py` файлы в корень CIRCUITPY
-2. Скопируйте папку `data/` с профилями
-3. MacroPad автоматически перезагрузится
+### Clean Installation
+1. Copy all `.py` files to CIRCUITPY root
+2. Copy `data/` folder with profiles
+3. MacroPad will automatically reboot
 
-### Переключение профилей
-- Вращайте энкодер для выбора
-- Нажмите энкодер для активации
-- Текущий профиль сохраняется в `current_profile.json`
+### Profile Switching
+- Rotate encoder to select
+- Press encoder to activate
+- Current profile is saved to `current_profile.json`
 
 ## Troubleshooting
 
-### Макрос не запускается
-1. Проверьте синтаксис JSON в профиле
-2. Убедитесь, что `"type"` указан правильно
-3. Для Toggle-макросов проверьте параметр `"wait"`
+### Macro Won't Start
+1. Check JSON syntax in profile
+2. Ensure `"type"` is specified correctly
+3. For Toggle macros check `"wait"` parameter
 
-### Переполнение очереди
-- Максимум 1000 макросов в очереди
-- При переполнении макрос не добавляется
-- Проверьте количество через дисплей
+### Queue Overflow
+- Maximum 1000 macros in queue
+- On overflow macro is not added
+- Check count via display
 
-### LED не меняются
-- Проверьте `color_manager.py`
-- Убедитесь, что `update_all_leds()` вызывается в главном цикле
+### LEDs Not Changing
+- Check `color_manager.py`
+- Ensure `update_all_leds()` is called in main loop
 
-## История версий
+## Version History
 
 ### v2.0 (Current)
-- Гибридная система приоритетов
-- SLOT + QUEUE архитектура
-- 5 явных состояний
-- Двухуровневые таймеры
-- Новый формат Toggle-макросов (параметр `wait`)
-- Улучшенная LED индикация
-- Расширенный дисплей с информацией о SLOT/QUEUE/SLEEP
+- Hybrid priority system
+- SLOT + QUEUE architecture
+- 5 explicit states
+- Two-level timers
+- New Toggle macro format (`wait` parameter)
+- Improved LED indication
+- Enhanced display with SLOT/QUEUE/SLEEP info
 
 ### v1.0
-- Базовая система макросов
-- Press/Hold/Toggle типы
-- Простая LED индикация
-- Профильная система
+- Basic macro system
+- Press/Hold/Toggle types
+- Simple LED indication
+- Profile system

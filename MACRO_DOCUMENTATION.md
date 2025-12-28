@@ -1,92 +1,92 @@
-# Документация по макросам MacroPad v2 (Remaster)
+# MacroPad v2 Macro Documentation (Remaster)
 
-## 🎯 Что нового в v2
+## 🎯 What's New in v2
 
-**Гибридная система приоритетов:**
-- ⚡ **Press** и **Hold** - приоритетные макросы (прерывают всё)
-- 🔄 **Toggle** - очередные макросы (ждут своей очереди в QUEUE)
+**Hybrid Priority System:**
+- ⚡ **Press** and **Hold** - priority macros (interrupt everything)
+- 🔄 **Toggle** - queued macros (wait their turn in QUEUE)
 
-**Ключевые изменения:**
-- `type: "once"` переименован в `type: "press"` (более понятное название)
-- `loop: true` больше не нужен для Toggle - циклы автоматические
-- `wait` на уровне макроса теперь только для Toggle (пауза между циклами)
-- SLOT + QUEUE система - один выполняется, остальные ждут
-
----
-
-## Оглавление
-1. [Структура профиля](#структура-профиля)
-2. [Типы макросов](#типы-макросов)
-3. [Типы действий (Actions)](#типы-действий-actions)
-4. [Паузы и задержки](#паузы-и-задержки)
-5. [Нажатия клавиш](#нажатия-клавиш)
-6. [Действия мыши](#действия-мыши)
-7. [Повторения (Repeat)](#повторения-repeat)
-8. [Цвета кнопок](#цвета-кнопок)
-9. [Полные примеры](#полные-примеры)
+**Key Changes:**
+- `type: "once"` renamed to `type: "press"` (more intuitive name)
+- `loop: true` no longer needed for Toggle - loops are automatic
+- `wait` at macro level now only for Toggle (pause between cycles)
+- SLOT + QUEUE system - one executes, others wait
 
 ---
 
-## Структура профиля
+## Table of Contents
+1. [Profile Structure](#profile-structure)
+2. [Macro Types](#macro-types)
+3. [Action Types](#action-types)
+4. [Pauses and Delays](#pauses-and-delays)
+5. [Key Presses](#key-presses)
+6. [Mouse Actions](#mouse-actions)
+7. [Repeats](#repeats)
+8. [Button Colors](#button-colors)
+9. [Complete Examples](#complete-examples)
 
-Профиль - это JSON-файл, содержащий конфигурацию 12 кнопок MacroPad.
+---
+
+## Profile Structure
+
+A profile is a JSON file containing the configuration for 12 MacroPad buttons.
 
 ```json
 {
-  "name": "Название профиля",
-  "description": "Описание профиля (необязательно)",
+  "name": "Profile Name",
+  "description": "Profile description (optional)",
   "buttons": [
-    { /* Кнопка 0 */ },
-    { /* Кнопка 1 */ },
-    null,  // Кнопка 2 не настроена
-    { /* Кнопка 3 */ },
-    // ... всего 12 элементов (0-11)
+    { /* Button 0 */ },
+    { /* Button 1 */ },
+    null,  // Button 2 not configured
+    { /* Button 3 */ },
+    // ... total 12 elements (0-11)
   ]
 }
 ```
 
-**Важно:**
-- Массив `buttons` должен содержать ровно 12 элементов
-- `null` означает, что кнопка не используется
-- Индексы 0-11 соответствуют физическим кнопкам на устройстве
+**Important:**
+- The `buttons` array must contain exactly 12 elements
+- `null` means the button is not used
+- Indexes 0-11 correspond to physical buttons on the device
 
 ---
 
-## Типы макросов
+## Macro Types
 
-### Структура макроса
+### Macro Structure
 
 ```json
 {
   "_id": "m_unique_id",
-  "name": "Название макроса",
+  "name": "Macro Name",
   "type": "press",
   "wait": 1000,
-  "actions": [ /* список действий */ ]
+  "actions": [ /* list of actions */ ]
 }
 ```
 
-### Параметры макроса
+### Macro Parameters
 
-| Параметр | Тип | Обязательный | Описание |
-|----------|-----|--------------|----------|
-| `_id` | string | Да | Уникальный идентификатор макроса |
-| `name` | string | Да | Название макроса (отображается на экране) |
-| `type` | string | Да | Тип макроса: `press`, `hold`, `toggle` |
-| `wait` | number | Нет | **Только для toggle:** пауза между циклами в мс |
-| `actions` | array | Да | Массив действий для выполнения |
-| `colors` | object | Нет | Настройка цветов подсветки кнопки |
+| Parameter | Type | Required | Description |
+|----------|-----|----------|-------------|
+| `_id` | string | Yes | Unique macro identifier |
+| `name` | string | Yes | Macro name (displayed on screen) |
+| `type` | string | Yes | Macro type: `press`, `hold`, `toggle` |
+| `wait` | number | No | **Toggle only:** pause between cycles in ms |
+| `actions` | array | Yes | Array of actions to execute |
+| `colors` | object | No | Button LED color configuration |
 
 ---
 
-### 1. 🔵 Press - Приоритетное однократное выполнение
+### 1. 🔵 Press - Priority Single Execution
 
-**Поведение:**
-- ⚡ Прерывает любой текущий макрос (даже Toggle)
-- 🚀 Выполняется немедленно (не ждёт очереди)
-- ✅ Выполняет все actions один раз и останавливается
+**Behavior:**
+- ⚡ Interrupts any current macro (even Toggle)
+- 🚀 Executes immediately (doesn't wait in queue)
+- ✅ Executes all actions once and stops
 
-**Когда использовать:** Быстрые действия, которые должны сработать мгновенно.
+**When to use:** Quick actions that should trigger instantly.
 
 ```json
 {
@@ -99,7 +99,7 @@
 }
 ```
 
-**Пример с несколькими действиями:**
+**Example with multiple actions:**
 ```json
 {
   "_id": "screenshot",
@@ -115,14 +115,14 @@
 
 ---
 
-### 2. 🟠 Hold - Приоритетное выполнение с удержанием
+### 2. 🟠 Hold - Priority Hold Execution
 
-**Поведение:**
-- ⚡ Прерывает любой текущий макрос
-- 🔁 Выполняется циклически, пока кнопка удерживается
-- ⏹️ Останавливается при отпускании кнопки
+**Behavior:**
+- ⚡ Interrupts any current macro
+- 🔁 Executes cyclically while button is held
+- ⏹️ Stops when button is released
 
-**Когда использовать:** Действия, которые должны повторяться пока кнопка зажата.
+**When to use:** Actions that should repeat while button is pressed.
 
 ```json
 {
@@ -135,11 +135,11 @@
 }
 ```
 
-**Конфликт Hold макросов:**
-- Если зажать две Hold кнопки одновременно → последняя нажатая прерывает предыдущую
-- При отпускании одной кнопки другая НЕ возобновляется
+**Hold Macro Conflict:**
+- If two Hold buttons are pressed simultaneously → the last pressed interrupts the previous one
+- When releasing one button, the other does NOT resume
 
-**Пример сложного Hold:**
+**Complex Hold Example:**
 ```json
 {
   "_id": "sprint_jump",
@@ -154,15 +154,15 @@
 
 ---
 
-### 3. 🟢 Toggle - Очередное циклическое выполнение
+### 3. 🟢 Toggle - Queued Cyclic Execution
 
-**Поведение:**
-- 📋 Если SLOT занят → встаёт в QUEUE (очередь)
-- 🔁 Выполняется циклически до повторного нажатия
-- ⏸️ При прерывании Press/Hold → переходит в SLEEPING
-- ✅ Автоматически возобновляется после `wait` времени
+**Behavior:**
+- 📋 If SLOT is busy → enters QUEUE
+- 🔁 Executes cyclically until pressed again
+- ⏸️ When interrupted by Press/Hold → transitions to SLEEPING
+- ✅ Automatically resumes after `wait` time
 
-**Когда использовать:** Фоновые задачи, автоматизация, фарм.
+**When to use:** Background tasks, automation, farming.
 
 ```json
 {
@@ -176,16 +176,16 @@
 }
 ```
 
-**Параметр `wait`:**
-- Указывается в миллисекундах
-- Это пауза **между циклами** (после выполнения всех actions)
-- Если не указан или 0 - цикл повторяется без паузы
+**`wait` Parameter:**
+- Specified in milliseconds
+- This is the pause **between cycles** (after all actions complete)
+- If not specified or 0 - cycle repeats without pause
 
-**Отмена Toggle:**
-- Повторное нажатие той же кнопки → макрос останавливается
-- Работает даже если макрос в очереди (IN_QUEUE)
+**Toggle Cancellation:**
+- Pressing the same button again → macro stops
+- Works even if macro is in queue (IN_QUEUE)
 
-**Пример с macro.wait:**
+**Example with macro.wait:**
 ```json
 {
   "_id": "farm_macro",
@@ -200,87 +200,87 @@
 }
 ```
 
-**Цикл выполнения Toggle:**
-1. Выполняет action 1 → ждёт `action.wait` (1000ms)
-2. Выполняет action 2 → ждёт `action.wait` (500ms)
-3. Выполняет action 3 (wait) → ждёт 5000ms
-4. Все actions завершены → освобождает SLOT
-5. Переходит в SLEEPING → ждёт `macro.wait` (60000ms)
-6. Просыпается → встаёт в очередь (или берёт SLOT если свободен)
-7. Повторяет с шага 1
+**Toggle Execution Cycle:**
+1. Executes action 1 → waits `action.wait` (1000ms)
+2. Executes action 2 → waits `action.wait` (500ms)
+3. Executes action 3 (wait) → waits 5000ms
+4. All actions completed → releases SLOT
+5. Transitions to SLEEPING → waits `macro.wait` (60000ms)
+6. Wakes up → enters queue (or takes SLOT if free)
+7. Repeats from step 1
 
 ---
 
-## Приоритеты и очередь
+## Priorities and Queue
 
-### Гибридная система
+### Hybrid System
 
-| Тип | Приоритет | Поведение при занятом SLOT |
-|-----|-----------|---------------------------|
-| **Press** | ⚡ Высокий | Прерывает текущий макрос |
-| **Hold** | ⚡ Высокий | Прерывает текущий макрос |
-| **Toggle** | 📋 Очередь | Встаёт в QUEUE |
+| Type | Priority | Behavior when SLOT is busy |
+|-----|----------|---------------------------|
+| **Press** | ⚡ High | Interrupts current macro |
+| **Hold** | ⚡ High | Interrupts current macro |
+| **Toggle** | 📋 Queue | Enters QUEUE |
 
-### Прерывание Toggle макроса
+### Toggle Macro Interruption
 
-Когда Press/Hold прерывает Toggle:
+When Press/Hold interrupts Toggle:
 
 ```
-[Было]
-Toggle выполняется → action 2 из 5
+[Before]
+Toggle executing → action 2 of 5
 
-[Press нажат]
-Toggle → SLEEPING (сохраняет таймер)
-Press → SLOT (выполняется немедленно)
+[Press triggered]
+Toggle → SLEEPING (saves timer)
+Press → SLOT (executes immediately)
 
-[Press завершён]
-SLOT освобождается
-process_queue() → Toggle возвращается в SLOT
+[Press completed]
+SLOT is released
+process_queue() → Toggle returns to SLOT
 
-[Toggle возобновляется]
-❌ НЕ продолжает с action 2
-✅ Начинает ЗАНОВО с action 1
+[Toggle resumes]
+❌ Does NOT continue from action 2
+✅ Starts OVER from action 1
 ```
 
-**Важно:** Toggle всегда начинается с начала после прерывания (простота и предсказуемость).
+**Important:** Toggle always starts from the beginning after interruption (simplicity and predictability).
 
 ---
 
-### Очередь (QUEUE)
+### Queue (QUEUE)
 
-- **Максимум:** 1000 макросов
-- **Порядок:** FIFO (First In, First Out)
-- **Дубликаты:** Запрещены (один макрос не может быть в очереди дважды)
-- **Overflow:** При достижении лимита → аварийная остановка всех макросов
+- **Maximum:** 1000 macros
+- **Order:** FIFO (First In, First Out)
+- **Duplicates:** Forbidden (one macro cannot be in queue twice)
+- **Overflow:** When limit is reached → emergency stop of all macros
 
-**Отображение на дисплее:**
+**Display on screen:**
 ```
-Test         EXEC   ← Профиль + статус
-#3 [T>] Farm       ← SLOT (Toggle активен)
-QUEUE: 2 [5...]    ← Размер очереди + первый в ней
-SLEEP: 1 | Enc=STOP ← Спящих макросов
+Test         EXEC   ← Profile + status
+#3 [T>] Farm       ← SLOT (Toggle active)
+QUEUE: 2 [5...]    ← Queue size + first in line
+SLEEP: 1 | Enc=STOP ← Sleeping macros
 ```
 
 ---
 
-## Состояния макросов и LED цвета
+## Macro States and LED Colors
 
-| Состояние | Цвет | RGB | Описание |
-|-----------|------|-----|----------|
-| **READY** | 🟢 Тусклый зелёный | (0, 40, 0) | Готов к запуску |
-| **ACTIVE** | 🔵 Синий | (0, 80, 255) | Выполняет action |
-| **WAIT** | 🟡 Жёлтый | (255, 200, 0) | Ждёт между actions |
-| **SLEEPING** | 🟢 Яркий зелёный | (0, 255, 0) | Toggle ждёт macro.wait |
-| **IN_QUEUE** | 🟣 Фиолетовый | (200, 0, 200) | Ждёт в очереди |
-| **OFF** | ⚫ Чёрный | (0, 0, 0) | Не настроен |
+| State | Color | RGB | Description |
+|-------|-------|-----|-------------|
+| **READY** | 🟢 Dim green | (0, 40, 0) | Ready to launch |
+| **ACTIVE** | 🔵 Blue | (0, 80, 255) | Executing action |
+| **WAIT** | 🟡 Yellow | (255, 200, 0) | Waiting between actions |
+| **SLEEPING** | 🟢 Bright green | (0, 255, 0) | Toggle waiting macro.wait |
+| **IN_QUEUE** | 🟣 Purple | (200, 0, 200) | Waiting in queue |
+| **OFF** | ⚫ Black | (0, 0, 0) | Not configured |
 
 ---
 
-## Типы действий (Actions)
+## Action Types
 
-### 1. Нажатие клавиш - `press`
+### 1. Key Press - `press`
 
-Имитирует полный цикл нажатия клавиши (нажатие → отпускание).
+Simulates a complete key press cycle (press → release).
 
 ```json
 {
@@ -290,14 +290,14 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `keys` (string, обязательный) - клавиша или комбинация клавиш
-- `wait` (number, необязательный) - пауза после нажатия в миллисекундах
-- `wait_random` (object, необязательный) - случайная пауза (см. раздел "Паузы")
+**Parameters:**
+- `keys` (string, required) - key or key combination
+- `wait` (number, optional) - pause after press in milliseconds
+- `wait_random` (object, optional) - random pause (see "Pauses" section)
 
-### 1.1. Зажатие клавиш - `press_down`
+### 1.1. Key Press Down - `press_down`
 
-Зажимает клавишу(и) без отпускания. Используется для точного контроля над нажатием клавиш.
+Presses key(s) without releasing. Used for precise control over key presses.
 
 ```json
 {
@@ -307,16 +307,16 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `keys` (string, обязательный) - клавиша или комбинация клавиш для зажатия
-- `wait` (number, необязательный) - пауза после зажатия в миллисекундах
-- `wait_random` (object, необязательный) - случайная пауза
+**Parameters:**
+- `keys` (string, required) - key or key combination to press down
+- `wait` (number, optional) - pause after pressing in milliseconds
+- `wait_random` (object, optional) - random pause
 
-**⚠️ Важно:** После `press_down` всегда должен следовать `press_up` для тех же клавиш, иначе они останутся зажатыми. При остановке макроса все клавиши автоматически отпускаются.
+**⚠️ Important:** After `press_down` must always follow `press_up` for the same keys, otherwise they will remain pressed. When macro stops, all keys are automatically released.
 
-### 1.2. Отпускание клавиш - `press_up`
+### 1.2. Key Press Up - `press_up`
 
-Отпускает ранее зажатые клавиши.
+Releases previously pressed keys.
 
 ```json
 {
@@ -326,12 +326,12 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `keys` (string, обязательный) - клавиша или комбинация клавиш для отпускания
-- `wait` (number, необязательный) - пауза после отпускания в миллисекундах
-- `wait_random` (object, необязательный) - случайная пауза
+**Parameters:**
+- `keys` (string, required) - key or key combination to release
+- `wait` (number, optional) - pause after release in milliseconds
+- `wait_random` (object, optional) - random pause
 
-**Пример использования `press_down` / `press_up`:**
+**Example using `press_down` / `press_up`:**
 
 ```json
 {
@@ -343,11 +343,11 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-Это обеспечивает точный контроль: Shift зажимается → ждем 100ms → нажимаем Space (пока Shift зажат) → ждем 50ms → отпускаем Shift → ждем 1000ms.
+This provides precise control: Shift is pressed → wait 100ms → press Space (while Shift held) → wait 50ms → release Shift → wait 1000ms.
 
-### 2. Ввод текста - `type`
+### 2. Text Input - `type`
 
-Вводит текст как будто пользователь печатает на клавиатуре.
+Types text as if user is typing on keyboard.
 
 ```json
 {
@@ -357,14 +357,14 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `text` (string, обязательный) - текст для ввода
-- `wait` (number, необязательный) - пауза после ввода в миллисекундах
-- `wait_random` (object, необязательный) - случайная пауза
+**Parameters:**
+- `text` (string, required) - text to input
+- `wait` (number, optional) - pause after input in milliseconds
+- `wait_random` (object, optional) - random pause
 
-### 3. Пауза - `wait`
+### 3. Pause - `wait`
 
-Ожидание заданное количество миллисекунд.
+Waits for specified number of milliseconds.
 
 ```json
 {
@@ -373,12 +373,12 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `ms` (number, обязательный) - время ожидания в миллисекундах
+**Parameters:**
+- `ms` (number, required) - wait time in milliseconds
 
-### 4. Случайная пауза - `wait_random`
+### 4. Random Pause - `wait_random`
 
-Ожидание случайное время в указанном диапазоне.
+Waits for random time within specified range.
 
 ```json
 {
@@ -388,13 +388,13 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `min` (number, обязательный) - минимальное время в миллисекундах
-- `max` (number, обязательный) - максимальное время в миллисекундах
+**Parameters:**
+- `min` (number, required) - minimum time in milliseconds
+- `max` (number, required) - maximum time in milliseconds
 
-### 5. Клик мыши - `mouse_click`
+### 5. Mouse Click - `mouse_click`
 
-Имитирует нажатие кнопки мыши.
+Simulates mouse button click.
 
 ```json
 {
@@ -404,14 +404,14 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `button` (string, необязательный) - кнопка мыши: `"left"`, `"right"`, `"middle"` (по умолчанию: `"left"`)
-- `wait` (number, необязательный) - пауза после клика в миллисекундах
-- `wait_random` (object, необязательный) - случайная пауза
+**Parameters:**
+- `button` (string, optional) - mouse button: `"left"`, `"right"`, `"middle"` (default: `"left"`)
+- `wait` (number, optional) - pause after click in milliseconds
+- `wait_random` (object, optional) - random pause
 
-### 6. Движение мыши - `mouse_move`
+### 6. Mouse Movement - `mouse_move`
 
-Перемещает курсор мыши относительно текущей позиции.
+Moves mouse cursor relative to current position.
 
 ```json
 {
@@ -422,15 +422,15 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `x` (number, обязательный) - смещение по горизонтали (+ вправо, - влево)
-- `y` (number, обязательный) - смещение по вертикали (+ вниз, - вверх)
-- `wait` (number, необязательный) - пауза после движения
-- `wait_random` (object, необязательный) - случайная пауза
+**Parameters:**
+- `x` (number, required) - horizontal offset (+ right, - left)
+- `y` (number, required) - vertical offset (+ down, - up)
+- `wait` (number, optional) - pause after movement
+- `wait_random` (object, optional) - random pause
 
-### 7. Прокрутка мыши - `mouse_scroll`
+### 7. Mouse Scroll - `mouse_scroll`
 
-Прокручивает колесико мыши.
+Scrolls mouse wheel.
 
 ```json
 {
@@ -440,14 +440,14 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `amount` (number, обязательный) - количество прокрутки (+ вверх, - вниз)
-- `wait` (number, необязательный) - пауза после прокрутки
-- `wait_random` (object, необязательный) - случайная пауза
+**Parameters:**
+- `amount` (number, required) - scroll amount (+ up, - down)
+- `wait` (number, optional) - pause after scroll
+- `wait_random` (object, optional) - random pause
 
-### 8. Повторение - `repeat`
+### 8. Repeat - `repeat`
 
-Повторяет группу действий указанное количество раз.
+Repeats a group of actions specified number of times.
 
 ```json
 {
@@ -460,32 +460,32 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Параметры:**
-- `count` (number, обязательный) - количество повторений
-- `actions` (array, обязательный) - массив действий для повторения
+**Parameters:**
+- `count` (number, required) - number of repetitions
+- `actions` (array, required) - array of actions to repeat
 
 ---
 
 ## Паузы и задержки
 
-### Встроенная пауза (`wait`)
+### Built-in Pause (`wait`)
 
-Все действия кроме `wait` и `wait_random` поддерживают встроенный параметр `wait`:
+All actions except `wait` and `wait_random` support the built-in `wait` parameter:
 
 ```json
 { "type": "press", "keys": "F1", "wait": 1000 }
 ```
 
-Это эквивалентно:
+This is equivalent to:
 
 ```json
 { "type": "press", "keys": "F1" },
 { "type": "wait", "ms": 1000 }
 ```
 
-### Случайная пауза (`wait_random`)
+### Random Pause (`wait_random`)
 
-Можно указать встроенную случайную паузу:
+You can specify a built-in random pause:
 
 ```json
 {
@@ -498,7 +498,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-Или отдельным действием:
+Or as a separate action:
 
 ```json
 {
@@ -508,14 +508,14 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Примеры использования пауз
+### Pause Usage Examples
 
-**Фиксированная пауза:**
+**Fixed pause:**
 ```json
 { "type": "press", "keys": "F1", "wait": 1000 }
 ```
 
-**Случайная пауза (более естественно):**
+**Random pause (more natural):**
 ```json
 {
   "type": "press",
@@ -524,16 +524,16 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Без паузы (следующее действие выполнится сразу):**
+**No pause (next action executes immediately):**
 ```json
 { "type": "press", "keys": "F1" }
 ```
 
 ---
 
-## Нажатия клавиш
+## Key Presses
 
-### Одиночные клавиши
+### Single Keys
 
 ```json
 { "type": "press", "keys": "A" }
@@ -543,9 +543,9 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 { "type": "press", "keys": "Space" }
 ```
 
-### Комбинации клавиш
+### Key Combinations
 
-Используйте `+` для комбинаций:
+Use `+` for combinations:
 
 ```json
 { "type": "press", "keys": "Ctrl+C" }
@@ -555,97 +555,97 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 { "type": "press", "keys": "Win+1" }
 ```
 
-### Поддерживаемые клавиши
+### Supported Keys
 
-**Буквы:** A-Z
+**Letters:** A-Z
 
-**Цифры:** 0-9
+**Numbers:** 0-9
 
-**Функциональные клавиши:** F1-F12
+**Function Keys:** F1-F12
 
-**Модификаторы:**
+**Modifiers:**
 - `Ctrl`, `Control` - Control
 - `Shift` - Shift
 - `Alt`, `Option` - Alt
-- `Win`, `GUI`, `Windows`, `Cmd`, `Command` - клавиша Windows/Command
+- `Win`, `GUI`, `Windows`, `Cmd`, `Command` - Windows/Command key
 
-**Специальные клавиши:**
+**Special Keys:**
 - `Enter`, `Return` - Enter
 - `Escape`, `Esc` - Escape
 - `Backspace` - Backspace
 - `Tab` - Tab
-- `Space`, `Spacebar` - Пробел
+- `Space`, `Spacebar` - Space
 - `Delete` - Delete
 - `Insert` - Insert
 - `Home`, `End` - Home/End
 - `PageUp`, `PageDown` - Page Up/Down
 
-**Стрелки:**
+**Arrows:**
 - `Up`, `Down`, `Left`, `Right`
 - `Up_Arrow`, `Down_Arrow`, `Left_Arrow`, `Right_Arrow`
 
-**Знаки препинания:**
-- `Minus` - минус
-- `Equals` - равно
-- `Left_Bracket`, `Right_Bracket` - скобки [ ]
-- `Backslash` - обратная косая
-- `Semicolon` - точка с запятой
-- `Quote` - кавычка
-- `Comma` - запятая
-- `Period` - точка
-- `Forward_Slash` - прямая косая
+**Punctuation:**
+- `Minus` - minus
+- `Equals` - equals
+- `Left_Bracket`, `Right_Bracket` - brackets [ ]
+- `Backslash` - backslash
+- `Semicolon` - semicolon
+- `Quote` - quote
+- `Comma` - comma
+- `Period` - period
+- `Forward_Slash` - forward slash
 
-**Другие:**
+**Other:**
 - `Caps_Lock` - Caps Lock
 - `Print_Screen` - Print Screen
 - `Scroll_Lock` - Scroll Lock
 - `Pause` - Pause
 
-### Примеры комбинаций
+### Combination Examples
 
 ```json
-// Сохранить файл
+// Save file
 { "type": "press", "keys": "Ctrl+S" }
 
-// Копировать
+// Copy
 { "type": "press", "keys": "Ctrl+C" }
 
-// Вставить
+// Paste
 { "type": "press", "keys": "Ctrl+V" }
 
-// Переключить окно
+// Switch window
 { "type": "press", "keys": "Alt+Tab" }
 
-// Переключиться на окно 1
+// Switch to window 1
 { "type": "press", "keys": "Win+1" }
 
-// Открыть диспетчер задач
+// Open task manager
 { "type": "press", "keys": "Ctrl+Shift+Esc" }
 
-// Закрыть окно
+// Close window
 { "type": "press", "keys": "Alt+F4" }
 ```
 
 ---
 
-## Действия мыши
+## Mouse Actions
 
-### Клик мыши
+### Mouse Click
 
 ```json
-// Левая кнопка (по умолчанию)
+// Left button (default)
 { "type": "mouse_click", "button": "left" }
 
-// Правая кнопка
+// Right button
 { "type": "mouse_click", "button": "right" }
 
-// Средняя кнопка (колесико)
+// Middle button (wheel)
 { "type": "mouse_click", "button": "middle" }
 
-// С паузой после клика
+// With pause after click
 { "type": "mouse_click", "button": "left", "wait": 500 }
 
-// Со случайной паузой
+// With random pause
 {
   "type": "mouse_click",
   "button": "left",
@@ -653,33 +653,33 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Движение мыши
+### Mouse Movement
 
 ```json
-// Переместить вправо на 10 пикселей
+// Move right 10 pixels
 { "type": "mouse_move", "x": 10, "y": 0 }
 
-// Переместить вверх на 20 пикселей
+// Move up 20 pixels
 { "type": "mouse_move", "x": 0, "y": -20 }
 
-// Диагональное движение
+// Diagonal movement
 { "type": "mouse_move", "x": 15, "y": 10 }
 ```
 
-### Прокрутка колесика
+### Mouse Scroll
 
 ```json
-// Прокрутить вверх
+// Scroll up
 { "type": "mouse_scroll", "amount": 5 }
 
-// Прокрутить вниз
+// Scroll down
 { "type": "mouse_scroll", "amount": -5 }
 
-// Быстрая прокрутка
+// Fast scroll
 { "type": "mouse_scroll", "amount": 10 }
 ```
 
-### Пример: Автокликер
+### Example: Auto Clicker
 
 ```json
 {
@@ -693,7 +693,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример: Двойной клик с паузой
+### Example: Double Click with Pause
 
 ```json
 {
@@ -710,25 +710,25 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 
 ---
 
-## Повторения (Repeat)
+## Repeats (Repeat)
 
-Действие `repeat` позволяет повторить группу действий несколько раз.
+The `repeat` action allows you to repeat a group of actions multiple times.
 
-### Синтаксис
+### Syntax
 
 ```json
 {
   "type": "repeat",
   "count": 5,
   "actions": [
-    /* действия для повторения */
+    /* actions to repeat */
   ]
 }
 ```
 
-### Примеры
+### Examples
 
-**Нажать пробел 10 раз:**
+**Press spacebar 10 times:**
 ```json
 {
   "type": "repeat",
@@ -739,7 +739,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Быстрые клики:**
+**Rapid clicks:**
 ```json
 {
   "type": "repeat",
@@ -750,7 +750,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Сложная последовательность:**
+**Complex sequence:**
 ```json
 {
   "type": "repeat",
@@ -763,7 +763,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-**Вложенные повторения (поддерживаются):**
+**Nested repeats (supported):**
 ```json
 {
   "type": "repeat",
@@ -783,11 +783,11 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 
 ---
 
-## Цвета кнопок
+## Button Colors
 
-Можно настроить цвет подсветки кнопки для разных состояний.
+You can configure the button backlight color for different states.
 
-### Структура `colors`
+### `colors` Structure
 
 ```json
 {
@@ -795,52 +795,52 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
   "name": "Example",
   "type": "toggle",
   "colors": {
-    "ready": [0, 255, 0],      // Зеленый - готов к запуску
-    "active": [255, 0, 0],     // Красный - выполняется
-    "waiting": [255, 255, 0]   // Желтый - ожидание
+    "ready": [0, 255, 0],      // Green - ready to run
+    "active": [255, 0, 0],     // Red - running
+    "waiting": [255, 255, 0]   // Yellow - waiting
   },
   "actions": [ /* ... */ ]
 }
 ```
 
-### Доступные состояния
+### Available States
 
-- `ready` - кнопка в режиме SLEEP (зелёный) - ждёт таймер между циклами
-- `loop` - кнопка ACTIVE (синий) - выполняет действия, владеет слотом
-- `wait` - кнопка в режиме WAIT (жёлтый) - ожидание между действиями, держит слот
-- `queued` - кнопка в очереди (фиолетовый) - проснулась, ждёт освобождения слота
+- `ready` - button in SLEEP mode (green) - waiting for timer between cycles
+- `loop` - button ACTIVE (blue) - executing actions, owns the slot
+- `wait` - button in WAIT mode (yellow) - waiting between actions, holds slot
+- `queued` - button in queue (purple) - woke up, waiting for slot to be freed
 
-**Примечание:** Состояния применяются автоматически в зависимости от того, что делает макрос.
-- **SLEEP (ready/зелёный)**: Макрос включен, но ждёт таймер между итерациями loop
-- **IN_QUEUE (queued/фиолетовый)**: Таймер истёк, но слот занят другим макросом
-- **ACTIVE (loop/синий)**: Выполняет последовательность действий
-- **WAIT (wait/жёлтый)**: Пауза между действиями внутри одной итерации
+**Note:** States are applied automatically depending on what the macro is doing.
+- **SLEEP (ready/green)**: Macro is enabled, but waiting for timer between loop iterations
+- **IN_QUEUE (queued/purple)**: Timer expired, but slot is occupied by another macro
+- **ACTIVE (loop/blue)**: Executing action sequence
+- **WAIT (wait/yellow)**: Pause between actions within one iteration
 
-### Формат цвета
+### Color Format
 
-Цвет задается массивом RGB: `[R, G, B]`
-- Значения от 0 до 255
-- Например: `[255, 0, 0]` - красный, `[0, 255, 0]` - зеленый, `[0, 0, 255]` - синий
+Color is specified as an RGB array: `[R, G, B]`
+- Values from 0 to 255
+- For example: `[255, 0, 0]` - red, `[0, 255, 0]` - green, `[0, 0, 255]` - blue
 
-### Примеры цветов
+### Color Examples
 
 ```json
-[255, 0, 0]     // Красный
-[0, 255, 0]     // Зеленый
-[0, 0, 255]     // Синий
-[255, 255, 0]   // Желтый
-[255, 0, 255]   // Пурпурный
-[0, 255, 255]   // Голубой
-[255, 255, 255] // Белый
-[128, 0, 128]   // Фиолетовый
-[255, 165, 0]   // Оранжевый
+[255, 0, 0]     // Red
+[0, 255, 0]     // Green
+[0, 0, 255]     // Blue
+[255, 255, 0]   // Yellow
+[255, 0, 255]   // Magenta
+[0, 255, 255]   // Cyan
+[255, 255, 255] // White
+[128, 0, 128]   // Purple
+[255, 165, 0]   // Orange
 ```
 
 ---
 
-## Полные примеры
+## Complete Examples
 
-### Пример 1: Простое нажатие клавиши каждые 240 секунд
+### Example 1: Simple Key Press Every 240 Seconds
 
 ```json
 {
@@ -858,7 +858,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 2: Комбо-атака (F7-3-F6-3 с паузами)
+### Example 2: Combo Attack (F7-3-F6-3 with Pauses)
 
 ```json
 {
@@ -875,7 +875,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 3: Быстрое действие каждые 15 секунд
+### Example 3: Quick Action Every 15 Seconds
 
 ```json
 {
@@ -893,7 +893,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 4: Автокликер мыши с двойным кликом
+### Example 4: Mouse Auto Clicker with Double Click
 
 ```json
 {
@@ -908,7 +908,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 5: Сложный фарм-макрос
+### Example 5: Complex Farm Macro
 
 ```json
 {
@@ -929,7 +929,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 6: Быстрая серия кликов с repeat
+### Example 6: Rapid Click Series with Repeat
 
 ```json
 {
@@ -948,7 +948,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 7: Макрос с случайными паузами (более естественный)
+### Example 7: Macro with Random Pauses (More Natural)
 
 ```json
 {
@@ -976,7 +976,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 8: Макрос с цветами
+### Example 8: Macro with Colors
 
 ```json
 {
@@ -995,7 +995,7 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 }
 ```
 
-### Пример 9: Полный профиль
+### Example 9: Complete Profile
 
 ```json
 {
@@ -1055,60 +1055,60 @@ SLEEP: 1 | Enc=STOP ← Спящих макросов
 
 ---
 
-## Советы и лучшие практики
+## Tips and Best Practices
 
-### Время ожидания
+### Wait Times
 
-- **Короткие паузы (50-300 мс):** для быстрых комбо
-- **Средние паузы (1-5 секунд):** для обычных действий
-- **Длинные паузы (10+ секунд):** для ожидания загрузки/кулдауна
+- **Short pauses (50-300 ms):** for quick combos
+- **Medium pauses (1-5 seconds):** for regular actions
+- **Long pauses (10+ seconds):** for waiting for loading/cooldown
 
-### Использование loop
+### Using loop
 
-- Для бесконечных макросов (фарм, автокликер) используйте `"loop": true` с типом `toggle`
-- Для однократных действий используйте `"type": "once"` без `loop`
+- For infinite macros (farm, auto clicker) use `"loop": true` with `toggle` type
+- For one-time actions use `"type": "once"` without `loop`
 
-### Случайные паузы
+### Random Pauses
 
-Используйте `wait_random` для более естественного поведения:
+Use `wait_random` for more natural behavior:
 ```json
 "wait_random": { "min": 900, "max": 1100 }
 ```
-вместо фиксированной паузы `"wait": 1000`
+instead of fixed pause `"wait": 1000`
 
-### Комбинации клавиш
+### Key Combinations
 
-- Модификаторы пишутся первыми: `"Ctrl+C"`, `"Shift+Alt+F1"`
-- Регистр не важен: `"CTRL+C"` = `"ctrl+c"` = `"Ctrl+C"`
-- Используйте `Win` для Windows, `Cmd` для Mac
+- Modifiers come first: `"Ctrl+C"`, `"Shift+Alt+F1"`
+- Case doesn't matter: `"CTRL+C"` = `"ctrl+c"` = `"Ctrl+C"`
+- Use `Win` for Windows, `Cmd` for Mac
 
-### Тестирование
+### Testing
 
-1. Начните с простого макроса
-2. Протестируйте каждое действие
-3. Постепенно добавляйте сложность
-4. Используйте `"type": "once"` для отладки перед переключением на `toggle`
+1. Start with a simple macro
+2. Test each action
+3. Gradually add complexity
+4. Use `"type": "once"` for debugging before switching to `toggle`
 
 ---
 
-## Временные единицы
+## Time Units
 
-**Важно:** Все паузы указываются в **миллисекундах** (мс).
+**Important:** All pauses are specified in **milliseconds** (ms).
 
-- 1 секунда = 1000 мс
-- 5 секунд = 5000 мс
-- 15 секунд = 15000 мс
-- 1 минута = 60000 мс
-- 4 минуты = 240000 мс
-- 5 минут = 300000 мс
+- 1 second = 1000 ms
+- 5 seconds = 5000 ms
+- 15 seconds = 15000 ms
+- 1 minute = 60000 ms
+- 4 minutes = 240000 ms
+- 5 minutes = 300000 ms
 
-### Калькулятор времени
+### Time Calculator
 
 ```
-секунды → миллисекунды: умножить на 1000
-минуты → миллисекунды: умножить на 60000
+seconds → milliseconds: multiply by 1000
+minutes → milliseconds: multiply by 60000
 
-Примеры:
+Examples:
 0.1 секунды = 100 мс
 0.25 секунды = 250 мс
 0.5 секунды = 500 мс
