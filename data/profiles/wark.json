@@ -5,25 +5,24 @@
       "_id": "m_1734350003",
       "name": "Main Combo",
       "type": "toggle",
-      "loop": true,
+      "wait": 11900,
       "actions": [
         { "type": "press", "keys": "F9", "wait": 300 },
         { "type": "press", "keys": "F10", "wait": 300 },
         { "type": "press", "keys": "F6", "wait": 300 },
         { "type": "press", "keys": "Shift+E", "wait": 1000 },
-        { "type": "press", "keys": "Shift+R", "wait": 10000 }
+        { "type": "press", "keys": "Shift+R" }
       ]
     },
     {
       "_id": "m_1734350004",
       "name": "F4 Every 15s",
       "type": "toggle",
-      "loop": true,
+      "wait": 15000,
       "actions": [
         {
           "type": "press",
-          "keys": "F4",
-          "wait": 15000
+          "keys": "F4"
         }
       ]
     },
@@ -31,12 +30,11 @@
       "_id": "m_1734350005",
       "name": "F8 Every 240s",
       "type": "toggle",
-      "loop": true,
+      "wait": 240000,
       "actions": [
         {
           "type": "press",
-          "keys": "F8",
-          "wait": 240000
+          "keys": "F8"
         }
       ]
     },

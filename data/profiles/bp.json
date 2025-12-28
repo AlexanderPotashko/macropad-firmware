@@ -5,22 +5,21 @@
       "_id": "m_1735000001",
       "name": "8 + Shift Space",
       "type": "toggle",
-      "loop": true,
+      "wait": 15500,
       "actions": [
         { "type": "press", "keys": "8", "wait": 500 },
-        { "type": "press", "keys": "Shift+Space", "wait": 15000 }
+        { "type": "press", "keys": "Shift+Space" }
       ]
     },
     {
       "_id": "m_1735000002",
       "name": "F4 Every 30s",
       "type": "toggle",
-      "loop": true,
+      "wait": 30000,
       "actions": [
         {
           "type": "press",
-          "keys": "F4",
-          "wait": 30000
+          "keys": "F4"
         }
       ]
     },

@@ -184,4 +184,13 @@ class ProfileManager:
         """Get current profile name."""
         current = self.get_current_profile()
         return current['name'] if current else "Unknown"
+    
+    def get_all_profile_names(self):
+        """
+        Get list of all profile names.
+        
+        Returns:
+            list: List of profile names
+        """
+        return [profile['name'] for profile in self.profiles]
 

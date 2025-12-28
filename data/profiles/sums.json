@@ -5,7 +5,7 @@
       "_id": "m_1734350002",
       "name": "Window 1 WARC",
       "type": "toggle",
-      "loop": true,
+      "wait": 606000,
       "actions": [
         {
           "type": "press",
@@ -26,10 +26,6 @@
           "type": "press",
           "keys": "Win+1",
           "wait": 2000
-        },
-        {
-          "type": "wait",
-          "ms": 600000
         }
       ]
     },
@@ -37,7 +33,7 @@
       "_id": "m_1734350003",
       "name": "Window BD",
       "type": "toggle",
-      "loop": true,
+      "wait": 314000,
       "actions": [
         {
           "type": "press",
@@ -58,10 +54,6 @@
           "type": "press",
           "keys": "Win+1",
           "wait": 2000
-        },
-        {
-          "type": "wait",
-          "ms": 308000
         }
       ]
     },
