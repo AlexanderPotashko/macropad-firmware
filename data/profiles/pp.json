@@ -5,28 +5,28 @@
       "_id": "m_pp_001",
       "name": "Space Every 5s",
       "type": "toggle",
-      "loop": true,
+      "wait": 15300,
       "actions": [
         { "type": "press", "keys": "8", "wait": 300 },
-        { "type": "press", "keys": "Shift+Space", "wait": 15000 }
+        { "type": "press", "keys": "Shift+Space" }
       ]
     },
     {
       "_id": "m_pp_002",
       "name": "8 Every 5s",
       "type": "toggle",
-      "loop": true,
+      "wait": 1000,
       "actions": [
-        { "type": "press", "keys": "8", "wait": 1000 }
+        { "type": "press", "keys": "8" }
       ]
     },
     {
       "_id": "m_pp_003",
       "name": "F8 Every 240s",
       "type": "toggle",
-      "loop": true,
+      "wait": 240000,
       "actions": [
-        { "type": "press", "keys": "F8", "wait": 240000 }
+        { "type": "press", "keys": "F8" }
       ]
     },
     null,

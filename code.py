@@ -1,208 +1,261 @@
+"""
+Main code v2 - Entry point with new hybrid priority system.
+
+This implements the complete remaster architecture:
+- Hybrid priority (Press/Hold interrupt, Toggle queued)
+- SLOT + QUEUE execution
+- Emergency stop support
+- Profile switching
+"""
+
 from adafruit_macropad import MacroPad
+import time
+
+# Import supporting modules (unchanged)
 from key_mapping import KEY_MAP, REVERSE_KEY_MAP
-from macro_engine import MacroExecutor
-from display_manager import DisplayManager
 from profile_manager import ProfileManager
+from macro_parser import parse_keys
+
+# Import v2 modules
+from macro_engine import MacroEngine
+from display_manager import DisplayManager
 from color_manager import ColorManager
 
-# Initialize MacroPad
+# Initialize MacroPad hardware
 macropad = MacroPad()
 
 # Track encoder position for profile switching
 last_encoder_position = macropad.encoder
+last_encoder_button_state = False
 
-# Emergency stop blink state
-emergency_blink_until = None
-emergency_blink_state = False
-last_blink_time = 0
-
+# Startup
 try:
-    # Show loading screen
-    print("MacroPad Macro System Starting...")
-    macropad.display_text("  Loading...\n\n Please wait")
-
-    # Load color configuration
+    print("=" * 50)
+    print("MacroPad Macro System v2 - REMASTER")
+    print("=" * 50)
+    
+    # Initialize components
+    display = DisplayManager(macropad)
+    display.show_startup()
+    
     color_manager = ColorManager('data/button_colors.json')
-
-    # Load profiles
     profile_manager = ProfileManager('data/profiles', 'data/current_profile.json')
+    
+    # Initialize macro engine
+    macro_engine = MacroEngine(
+        keyboard=macropad.keyboard,
+        mouse=macropad.mouse,
+        consumer_control=macropad.consumer_control,
+        parse_keys_func=parse_keys
+    )
+    
+    # Load initial profile
     current_profile = profile_manager.get_current_profile()
-    
     if current_profile is None:
-        print("ERROR: No profiles found")
-        macropad.display_text("ERROR!\n\nNo profiles\nfound")
-        while True:
-            pass  # Halt
+        raise RuntimeError("No profiles found")
     
-    # Load macros directly from profile buttons
-    buttons_array = current_profile['buttons']
-    
-    # Convert array to dict (skip null entries)
+    # Convert profile format (buttons array -> macros dict)
+    buttons_array = current_profile.get('buttons', [])
     macro_configs = {}
-    if buttons_array is not None:
+    if buttons_array:
         for i, button in enumerate(buttons_array):
             if button is not None:
-                macro_configs[i] = button
-
+                macro_configs[str(i)] = button
+    
     if not macro_configs:
-        # Error loading macros
-        print(f"ERROR: Failed to load profile macros")
-        macropad.display_text(f"ERROR!\n\nFailed to load\nprofile")
-        while True:
-            pass  # Halt
-
-    # Initialize components
-    executor = MacroExecutor(macropad, macro_configs)
-    display = DisplayManager(macropad)
-
-    # Initial display update
-    display.update(executor, current_profile['name'], force=True)
-
-    # Initialize RGB LEDs using color manager
+        raise RuntimeError("No macros in profile")
+    
+    # Load profile into engine
+    profile_config = {'macros': macro_configs}
+    macro_engine.load_profile(profile_config)
+    
+    # Initialize LEDs
     for i in range(12):
         physical_key = REVERSE_KEY_MAP.get(i, i)
-        if i in executor.macro_states:
-            color = color_manager.get_color('ready', executor.macro_states[i].config.get('colors'))
+        state = macro_engine.get_macro_state(i)
+        if state:
+            color = color_manager.get_color('ready')
         else:
-            color = color_manager.get_color('no_macro')
+            color = color_manager.get_color('off')
         macropad.pixels[physical_key] = color
-
-    print(f"System ready! Profile: {current_profile['name']}")
+    
+    # Get all profile names for display navigation
+    all_profiles = profile_manager.get_all_profile_names()
+    
+    # Initial display update
+    display.update(macro_engine, current_profile['name'], all_profiles, last_encoder_position, force=True)
+    
+    print(f"✅ System ready! Profile: {current_profile['name']}")
+    print(f"✅ Loaded {len(macro_configs)} macro(s)")
+    print("=" * 50)
 
 except Exception as e:
-    # Critical startup error
     error_msg = f"STARTUP ERROR:\n{str(e)[:50]}"
     print(error_msg)
-    macropad.display_text(error_msg)
+    try:
+        macropad.display_text(error_msg)
+    except:
+        pass
     while True:
-        pass  # Halt
+        time.sleep(1)  # Halt
 
-# Main loop
+# ============================================================
+# MAIN LOOP
+# ============================================================
+
 while True:
     try:
-        # Process encoder rotation (profile switching)
+        # ⏰ Current time (used for emergency blink timing)
+        current_time = time.monotonic()
+        
+        # ============================================
+        # 1. ENCODER ROTATION (Profile switching)
+        # ============================================
         current_encoder_position = macropad.encoder
         if current_encoder_position != last_encoder_position:
             direction = 1 if current_encoder_position > last_encoder_position else -1
             last_encoder_position = current_encoder_position
             
-            print(f"ENCODER ROTATED - Switching profile (direction: {direction})")
+            print(f"\n{'='*50}")
+            print(f"🔄 ENCODER ROTATION - Switching profile (direction: {direction})")
+            print(f"{'='*50}")
             
-            # Stop all current macros
-            executor.stop_all()
+            # CRITICAL: Full stop + queue clear
+            macro_engine.emergency_stop_all()
             
             # Switch profile
+            old_profile_name = current_profile['name']
             current_profile = profile_manager.switch_profile(direction)
             
-            # Load macros directly from profile buttons
-            buttons_array = current_profile['buttons']
-            
-            # Convert array to dict (skip null entries)
+            # Load new profile
+            buttons_array = current_profile.get('buttons', [])
             macro_configs = {}
-            if buttons_array is not None:
+            if buttons_array:
                 for i, button in enumerate(buttons_array):
                     if button is not None:
-                        macro_configs[i] = button
+                        macro_configs[str(i)] = button
             
-            if macro_configs:
-                # Reinitialize executor with new macros
-                executor = MacroExecutor(macropad, macro_configs)
-                print(f"Loaded profile: {current_profile['name']}")
-                
-                # Reset all LEDs using color manager
-                for i in range(12):
-                    physical_key = REVERSE_KEY_MAP.get(i, i)
-                    if i in executor.macro_states:
-                        color = color_manager.get_color('ready', executor.macro_states[i].config.get('colors'))
-                    else:
-                        color = color_manager.get_color('no_macro')
-                    macropad.pixels[physical_key] = color
-                
-                # Show profile name briefly
-                macropad.display_text(f"  Profile:\n\n{current_profile['name']}")
-                import time
-                time.sleep(1.5)
-            else:
-                print(f"ERROR: Failed to load {macros_file}")
+            profile_config = {'macros': macro_configs}
+            macro_engine.load_profile(profile_config)
             
-            # Force display update
-            display.update(executor, current_profile['name'], force=True)
+            # Reset LEDs
+            for i in range(12):
+                physical_key = REVERSE_KEY_MAP.get(i, i)
+                state = macro_engine.get_macro_state(i)
+                if state:
+                    color = color_manager.get_color('ready')
+                else:
+                    color = color_manager.get_color('off')
+                macropad.pixels[physical_key] = color
+            
+            # Show profile change
+            display.show_profile_change(old_profile_name, current_profile['name'])
+            display.update(macro_engine, current_profile['name'], all_profiles, last_encoder_position, force=True)
+            
+            print(f"✅ Loaded profile: {current_profile['name']}")
         
-        # Process encoder button (emergency stop all macros)
-        encoder_switch = macropad.encoder_switch
-        if encoder_switch:
-            print("ENCODER PRESSED - STOPPING ALL MACROS")
-            executor.stop_all()
-            # Start emergency blink (1.5 seconds)
-            import time
-            emergency_blink_until = time.monotonic() + 1.5
-            emergency_blink_state = True
-            last_blink_time = time.monotonic()
-            # Force display update
-            display.update(executor, current_profile['name'], force=True)
+        # ============================================
+        # 2. ENCODER BUTTON (Emergency stop)
+        # ============================================
+        encoder_button_pressed = macropad.encoder_switch
+        if encoder_button_pressed and not last_encoder_button_state:
+            print(f"\n🚨 EMERGENCY STOP - Encoder button pressed")
+            macro_engine.emergency_stop_all()
+            macro_engine.start_error_blink(duration=1.5, message="EMERGENCY STOP")
+            
+            # Reset LEDs to ready
+            for i in range(12):
+                physical_key = REVERSE_KEY_MAP.get(i, i)
+                state = macro_engine.get_macro_state(i)
+                if state:
+                    color = color_manager.get_color('ready')
+                else:
+                    color = color_manager.get_color('off')
+                macropad.pixels[physical_key] = color
         
-        # Process key events
+        last_encoder_button_state = encoder_button_pressed
+        
+        # ============================================
+        # 3. KEY EVENTS (Press/Release)
+        # ============================================
         event = macropad.keys.events.get()
-        
         if event:
-            # Convert physical key number to logical
-            physical_key = event.key_number
-            logical_key = KEY_MAP.get(physical_key)
+            logical_key = KEY_MAP.get(event.key_number, event.key_number)
             
-            if logical_key is not None:
-                if event.pressed:
-                    print(f"Key pressed: physical={physical_key}, logical={logical_key}")
-                    executor.handle_key_press(logical_key)
-                elif event.released:
-                    print(f"Key released: physical={physical_key}, logical={logical_key}")
-                    executor.handle_key_release(logical_key)
-        
-        # Update all active macros
-        executor.update()
-        
-        # Update display (pass profile name)
-        display.update(executor, current_profile['name'])
-        
-        # Handle emergency blink
-        import time
-        current_time = time.monotonic()
-        
-        if emergency_blink_until and current_time < emergency_blink_until:
-            # Emergency blink active - toggle every 200ms
-            if current_time - last_blink_time >= 0.2:
-                emergency_blink_state = not emergency_blink_state
-                last_blink_time = current_time
-            
-            # Set all LEDs to blink state
-            if emergency_blink_state:
-                blink_color = color_manager.get_color('error')
+            if event.pressed:
+                print(f"\n⬇️  KEY PRESS: {logical_key}")
+                macro_engine.handle_key_press(logical_key)
             else:
-                blink_color = (0, 0, 0)
+                print(f"⬆️  KEY RELEASE: {logical_key}")
+                macro_engine.handle_key_release(logical_key)
+        
+        # ============================================
+        # 4. CHECK SLEEPING MACROS
+        # ✅ BEFORE process_queue - so woken macros can enter queue
+        # ============================================
+        macro_engine.check_sleeping_macros()
+        
+        # ============================================
+        # 5. PROCESS QUEUE
+        # ✅ BEFORE execute_active_macro - so freed slot can be filled
+        # ============================================
+        macro_engine.process_queue()
+        
+        # ============================================
+        # 6. EXECUTE ACTIVE MACRO
+        # ✅ IN THE END - execution in stable state
+        # ============================================
+        macro_engine.execute_active_macro()
+        
+        # ============================================
+        # 7. UPDATE DISPLAY
+        # ============================================
+        display.update(macro_engine, current_profile['name'], all_profiles, last_encoder_position)
+        
+        # ============================================
+        # 8. UPDATE LEDS
+        # ============================================
+        # Handle emergency blink
+        if macro_engine.is_emergency_blinking():
+            # Flash all LEDs red
+            emergency_color = color_manager.get_emergency_color()
+            for i in range(12):
+                physical_key = REVERSE_KEY_MAP.get(i, i)
+                macropad.pixels[physical_key] = emergency_color
+        else:
+            # Normal LED updates
+            queue_info = macro_engine.get_queue_info()
             
             for i in range(12):
                 physical_key = REVERSE_KEY_MAP.get(i, i)
-                macropad.pixels[physical_key] = blink_color
-        elif emergency_blink_until and current_time >= emergency_blink_until:
-            # Blink finished, clear state
-            emergency_blink_until = None
-            # Continue to normal LED update below
-        
-        # Update RGB LEDs based on macro states using ColorManager
-        if not emergency_blink_until:
-            for logical_key in range(12):
-                physical_key = REVERSE_KEY_MAP.get(logical_key, logical_key)
+                state = macro_engine.get_macro_state(i)
                 
-                if logical_key in executor.macro_states:
-                    state = executor.macro_states[logical_key]
-                    color = color_manager.get_button_color(state, executor)
-                    macropad.pixels[physical_key] = color
+                if state:
+                    is_in_queue = i in queue_info['queue_items']
+                    color = color_manager.get_color_for_macro(state, is_in_queue)
                 else:
-                    # No macro configured
-                    color = color_manager.get_color('no_macro')
-                    macropad.pixels[physical_key] = color
+                    color = color_manager.get_color('off')
+                
+                macropad.pixels[physical_key] = color
+        
+        # ============================================
+        # 9. (OPTIONAL) CHECK INVARIANTS
+        # ============================================
+        # Uncomment for debugging:
+        # macro_engine.check_invariants()
+        
+    except KeyboardInterrupt:
+        print("\n🛑 System stopped by user")
+        macro_engine.emergency_stop_all()
+        break
     
     except Exception as e:
-        print(f"Main loop error: {e}")
-        # Continue running despite errors
-        import time
+        print(f"\n❌ RUNTIME ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        macro_engine.emergency_stop_all()
+        macro_engine.start_error_blink(duration=3.0, message=f"ERROR: {str(e)[:20]}")
+        
+        # Continue running (don't crash)
         time.sleep(0.1)

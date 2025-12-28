@@ -1,69 +1,149 @@
-# MacroPad Firmware
+# MacroPad Firmware v2
 
-CircuitPython firmware for Adafruit MacroPad RP2040 with powerful macro system, profiles, and visual feedback.
+Прошивка для Adafruit MacroPad RP2040 с продвинутой системой управления макросами.
 
-## ✨ Features
+## Особенности
 
-- **12 programmable keys** with full RGB backlight
-- **Profile switching** via encoder
-- **Macro types**: Once (single press), Hold (press and hold), Toggle (on/off)
-- **Loops and repetitions** with conditional exits
-- **Emergency stop all macros** (encoder button press)
-- **Custom colors** for each key
-- **Keyboard and mouse actions**: key presses, clicks, movements, scrolling
-- **OLED display** showing current profile
+### Гибридная система приоритетов
+- **Press/Hold макросы**: Имеют высший приоритет, могут прерывать активные макросы
+- **Toggle макросы**: Выполняются через очередь, не прерывают друг друга
 
-## 📦 Installation
+### Система SLOT + QUEUE
+- **12 СЛОТОВ** (по одному на кнопку): Для мгновенного выполнения
+- **Очередь до 1000 макросов**: Для ожидающих Toggle-макросов
+- Защита от переполнения: Проверка ПЕРЕД добавлением
 
-1. Install CircuitPython 8.x on MacroPad
-2. Copy all `.py` files to `CIRCUITPY` drive
-3. Create `data/` folder structure or use [MacroPad Configurator](https://github.com/AlexanderPotashko/macropad-configurator)
-4. Reset device (Ctrl+D or Ctrl+Shift+R in Serial console)
+### Двухуровневая система таймеров
+- `action_wait_until`: Ожидание между действиями внутри макроса
+- `cycle_wait_until`: Ожидание перед следующим циклом Toggle-макроса
 
-## 🎮 Usage
+### 5 состояний макросов
+1. **OFF** (по умолчанию)
+2. **ACTIVE** (выполняется действие)
+3. **WAIT** (ожидание между действиями)
+4. **SLEEPING** (ожидание перед следующим циклом)
+5. **IN_QUEUE** (ожидает в очереди)
 
-- **Keys 0-11**: Execute assigned macros
-- **Encoder rotation**: Switch between profiles
-- **Encoder press**: Emergency stop all active macros
+### LED индикация
+- **READY** (тусклый зелёный): Макрос готов к запуску
+- **ACTIVE** (синий): Макрос выполняет действие
+- **WAIT** (жёлтый): Макрос ожидает между действиями
+- **SLEEPING** (зелёный): Toggle-макрос спит до следующего цикла
+- **IN_QUEUE** (фиолетовый): Toggle-макрос в очереди
 
-## 📚 Documentation
-
-Detailed documentation on creating macros and configuring profiles is available in [MACRO_DOCUMENTATION.md](MACRO_DOCUMENTATION.md).
-
-## 🛠️ Tools
-
-For visual editing of profiles and macros, use:
-
-**[MacroPad Configurator](https://github.com/AlexanderPotashko/macropad-configurator)** - web application for convenient profile configuration, macro creation, and key color management.
-
-## 📁 Project Structure
-
+### OLED дисплей
+Показывает состояние системы в реальном времени:
 ```
-macropad-firmware/
-├── code.py                 # Main program file
-├── macro_engine.py         # Macro execution engine
-├── macro_parser.py         # JSON configuration parser
-├── profile_manager.py      # Profile management
-├── display_manager.py      # OLED display management
-├── color_manager.py        # RGB backlight management
-├── key_mapping.py          # Key and action mapping
-├── data/
-│   ├── button_colors.json      # Color configuration
-│   ├── current_profile.json    # Current active profile
-│   └── profiles/               # Profiles folder
-│       ├── default.json
-│       └── ...
-└── MACRO_DOCUMENTATION.md  # Complete documentation
+Test EXEC
+/ #3 [T>] Farm
+/ QUEUE: 2 [5...]
+/ SLEEP: 1
+```
+- **EXEC**: Выполняемые макросы (SLOT)
+- **QUEUE**: Количество и имена ожидающих
+- **SLEEP**: Количество спящих макросов
+
+## Структура файлов
+
+### Основные модули
+- `code.py` - Точка входа, главный цикл
+- `macro_engine.py` - Координация выполнения макросов
+- `macro_state.py` - Управление состоянием макросов
+- `queue_manager.py` - Управление SLOT + QUEUE
+- `action_executor.py` - Выполнение действий (клавиши, мышь)
+- `color_manager.py` - Управление LED индикацией
+- `display_manager.py` - Управление OLED дисплеем
+
+### Вспомогательные модули
+- `key_mapping.py` - Маппинг кнопок на макросы
+- `profile_manager.py` - Управление профилями
+- `macro_parser.py` - Парсинг JSON конфигураций
+
+### Данные
+- `data/profiles/*.json` - Профили с макросами
+- `data/current_profile.json` - Активный профиль
+- `data/button_colors.json` - Цвета кнопок
+
+## Формат макросов
+
+### Press (одно нажатие)
+```json
+{
+  "name": "Single Press",
+  "type": "press",
+  "actions": [
+    { "type": "press", "keys": "F1" }
+  ]
+}
 ```
 
-## 🔧 Requirements
+### Hold (удерживание)
+```json
+{
+  "name": "Hold Shift",
+  "type": "hold",
+  "actions": [
+    { "type": "press", "keys": "Shift" }
+  ]
+}
+```
 
-- Adafruit MacroPad RP2040
-- CircuitPython 8.x
-- Adafruit libraries (included in CircuitPython bundle)
+### Toggle (циклическое выполнение)
+```json
+{
+  "name": "Farm Loop",
+  "type": "toggle",
+  "wait": 15000,
+  "actions": [
+    { "type": "press", "keys": "8", "wait": 500 },
+    { "type": "press", "keys": "Shift+Space" }
+  ]
+}
+```
 
-## 📄 License
+**Важно**: Параметр `wait` на уровне макроса задаёт паузу перед следующим циклом. Финальное `wait` из последнего действия удалено в v2.
 
-MIT
+## Deployment
 
-**Version:** 1.0.0
+### Чистая установка
+1. Скопируйте все `.py` файлы в корень CIRCUITPY
+2. Скопируйте папку `data/` с профилями
+3. MacroPad автоматически перезагрузится
+
+### Переключение профилей
+- Вращайте энкодер для выбора
+- Нажмите энкодер для активации
+- Текущий профиль сохраняется в `current_profile.json`
+
+## Troubleshooting
+
+### Макрос не запускается
+1. Проверьте синтаксис JSON в профиле
+2. Убедитесь, что `"type"` указан правильно
+3. Для Toggle-макросов проверьте параметр `"wait"`
+
+### Переполнение очереди
+- Максимум 1000 макросов в очереди
+- При переполнении макрос не добавляется
+- Проверьте количество через дисплей
+
+### LED не меняются
+- Проверьте `color_manager.py`
+- Убедитесь, что `update_all_leds()` вызывается в главном цикле
+
+## История версий
+
+### v2.0 (Current)
+- Гибридная система приоритетов
+- SLOT + QUEUE архитектура
+- 5 явных состояний
+- Двухуровневые таймеры
+- Новый формат Toggle-макросов (параметр `wait`)
+- Улучшенная LED индикация
+- Расширенный дисплей с информацией о SLOT/QUEUE/SLEEP
+
+### v1.0
+- Базовая система макросов
+- Press/Hold/Toggle типы
+- Простая LED индикация
+- Профильная система
