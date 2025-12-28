@@ -27,16 +27,15 @@ class ColorManager:
     - ERROR: Red (255, 0, 0) - Error state
     """
     
-    # Default colors from plan
+    # Default colors - only used keys
     DEFAULT_COLORS = {
-        'sleeping': (0, 255, 0),      # 🟢 Toggle waiting (bright green)
-        'active': (0, 80, 255),        # 🔵 Executing (bright blue)
-        'wait': (255, 200, 0),         # 🟡 Waiting between actions (yellow)
-        'in_queue': (200, 0, 200),     # 🟣 In queue (purple)
-        'ready': (0, 40, 0),           # 🟢 Ready to start (dim green)
-        'off': (0, 0, 0),              # ⚫ Disabled (black)
-        'error': (255, 0, 0),          # 🔴 Error (red)
-        'emergency': (255, 0, 0)       # 🔴 Emergency blink (red)
+        'ready': (0, 80, 0),           # 🟢 Macro configured but not active
+        'loop': (0, 0, 80),            # 🔵 Executing (active or waiting between actions)
+        'wait': (80, 80, 0),           # 🟡 Sleeping (waiting between cycles)
+        'queued': (60, 0, 60),         # 🟣 In execution queue
+        'off': (0, 0, 0),              # ⚫ No macro / empty button (black)
+        'emergency': (255, 0, 0),      # 🔴 Emergency error
+        'error': (255, 0, 0)           # 🔴 Error state
     }
     
     def __init__(self, colors_file='data/button_colors.json'):
@@ -56,31 +55,27 @@ class ColorManager:
             with open(self.colors_file, 'r') as f:
                 data = json.load(f)
             
-            # Look for 'remaster' section
+            # Look for 'remaster' section, or use data directly
             if 'remaster' in data:
                 color_data = data['remaster']
             elif 'default' in data:
                 color_data = data['default']
             else:
-                print(f"[ColorManager] No custom colors found in {self.colors_file}")
-                return
+                # Use data directly (flat structure)
+                color_data = data
             
             # Validate and load colors
             for state, color in color_data.items():
                 if self._validate_color(color):
                     self.custom_colors[state] = tuple(color) if isinstance(color, list) else color
-                else:
-                    print(f"[ColorManager] WARNING: Invalid color for state '{state}': {color}")
-            
-            print(f"[ColorManager] Loaded {len(self.custom_colors)} custom color(s)")
         
         except OSError:
             # File not found - use defaults
             pass
         except json.JSONDecodeError as e:
-            print(f"[ColorManager] WARNING: Invalid JSON in {self.colors_file}: {e}")
+            pass
         except Exception as e:
-            print(f"[ColorManager] WARNING: Error loading colors: {e}")
+            pass
     
     def get_color_for_macro(self, macro_state, is_in_queue=False):
         """
@@ -98,26 +93,31 @@ class ColorManager:
         
         # Determine state
         if not macro_state.is_active:
-            # OFF state
-            return self.get_color('ready')  # Show as ready when configured but not active
+            # OFF state - macro configured but not running
+            return self.get_color('ready')  # Show as green when inactive
         
         if is_in_queue:
             # IN_QUEUE state
-            return self.get_color('in_queue')
+            return self.get_color('queued')
         
         if macro_state.is_sleeping():
             # SLEEPING state (Toggle waiting between cycles)
-            return self.get_color('sleeping')
+            return self.get_color('wait')  # Yellow for sleeping
         
         if macro_state.is_waiting_between_actions():
-            # WAIT state (waiting between actions)
-            return self.get_color('wait')
+            # WAIT state (waiting between actions) - part of execution
+            return self.get_color('loop')  # Blue - same as active execution
         
         if macro_state.is_ready_to_execute():
             # ACTIVE state (executing action)
-            return self.get_color('active')
+            return self.get_color('loop')  # Blue for execution
         
-        # Default fallback
+        # If macro is active but doesn't match any state, it's likely executing
+        # This can happen during state transitions
+        if macro_state.is_active:
+            return self.get_color('loop')  # Default to blue for active macros
+        
+        # Default fallback for truly off macros
         return self.get_color('off')
     
     def get_color(self, state_name):
@@ -142,9 +142,8 @@ class ColorManager:
         if state_name in self.DEFAULT_COLORS:
             return self.DEFAULT_COLORS[state_name]
         
-        # Unknown state - return off
-        print(f"[ColorManager] WARNING: Unknown state '{state_name}'")
-        return self.DEFAULT_COLORS['off']
+        # Unknown state - return black
+        return (0, 0, 0)
     
     def get_emergency_color(self):
         """Get color for emergency blink (red)."""

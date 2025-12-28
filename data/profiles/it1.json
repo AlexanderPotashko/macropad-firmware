@@ -1,0 +1,45 @@
+{
+  "name": "IT1",
+  "buttons": [
+    {
+      "_id": "m_it1_001",
+      "name": "F1 Every 300s",
+      "type": "toggle",
+      "wait": 300000,
+      "actions": [
+        { "type": "press", "keys": "F1" }
+      ]
+    },
+    {
+      "_id": "m_it1_002",
+      "name": "Win+3→F1→Win+1",
+      "type": "toggle",
+      "wait": 600000,
+      "actions": [
+        { "type": "press", "keys": "Win+3", "wait": 2000 },
+        { "type": "press", "keys": "F1", "wait": 1000 },
+        { "type": "press", "keys": "Win+1", "wait": 250 }
+      ]
+    },
+    {
+      "_id": "m_it1_003",
+      "name": "Win+3→F1→Win+1",
+      "type": "toggle",
+      "wait": 310000,
+      "actions": [
+        { "type": "press", "keys": "Win+3", "wait": 2000 },
+        { "type": "press", "keys": "F1", "wait": 1000 },
+        { "type": "press", "keys": "Win+1", "wait": 250 }
+      ]
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}

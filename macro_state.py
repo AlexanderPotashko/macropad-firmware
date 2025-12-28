@@ -199,13 +199,12 @@ class MacroState:
     def set_cycle_wait(self):
         """
         Set timer for waiting between cycles (toggle only).
-        Uses the macro's configured wait time.
+        Uses the macro's configured wait time (minimum 100ms).
         """
-        if self.wait_time > 0:
-            self.cycle_wait_until = time.monotonic() + (self.wait_time / 1000.0)
-            print(f"[MacroState] Macro {self.key_id} → SLEEPING for {self.wait_time}ms")
-        else:
-            self.cycle_wait_until = None
+        # Enforce minimum wait time of 100ms
+        effective_wait = max(self.wait_time, 100)
+        self.cycle_wait_until = time.monotonic() + (effective_wait / 1000.0)
+        print(f"[MacroState] Macro {self.key_id} → SLEEPING for {effective_wait}ms")
     
     def check_and_clear_action_timer(self):
         """

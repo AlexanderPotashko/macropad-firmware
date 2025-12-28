@@ -1,6 +1,13 @@
 # Profile management system
 import json
-import os
+
+# CircuitPython has basic os support
+try:
+    import os
+    HAS_OS = True
+except ImportError:
+    HAS_OS = False
+    print("WARNING: No os module, profile loading may fail")
 
 
 class ProfileManager:
@@ -29,12 +36,16 @@ class ProfileManager:
             bool: True if loaded successfully, False otherwise
         """
         try:
-            # Check if directory exists by trying to list it
+            # List files in directory
+            if not HAS_OS:
+                print("ERROR: Cannot load profiles without os module")
+                return False
+            
             try:
                 profile_files = [f for f in os.listdir(self.profiles_dir) 
                                if f.endswith('.json')]
-            except OSError:
-                print(f"ERROR: Profiles directory not found: {self.profiles_dir}")
+            except Exception as e:
+                print(f"ERROR: Cannot list profiles directory: {e}")
                 return False
             
             if not profile_files:

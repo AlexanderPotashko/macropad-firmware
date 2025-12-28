@@ -1,7 +1,6 @@
 # JSON macro file parser and validator
 import json
 from key_mapping import KEY_NAMES, MODIFIERS
-from color_manager import ColorManager
 
 
 def load_macros(filename='macros.json'):
@@ -87,12 +86,6 @@ def validate_macro(config, key_id):
     if not isinstance(loop, bool):
         print(f"Key {key_id}: 'loop' must be true or false")
         return False
-    
-    # Validate optional colors field
-    if 'colors' in config:
-        if not ColorManager.validate_macro_colors(config['colors']):
-            print(f"Key {key_id}: Invalid 'colors' configuration")
-            return False
     
     # Validate each action
     for i, action in enumerate(config['actions']):
